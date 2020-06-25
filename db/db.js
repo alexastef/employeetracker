@@ -14,6 +14,12 @@ class DB {
     }
     
     //findAllManagers
+    findAllManagers() {
+        return this.connection.query(
+            `SELECT CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+            INNER JOIN employee manager on manager.id = employee.manager_id;`
+        )
+    }
 
     // Create new employee
     createEmployee(newEmployee) {
@@ -24,10 +30,31 @@ class DB {
     }
 
     //removeEmployee
+    removeEmployee(rmvEmployee) {
+        let inserts = [rmvEmployee.remove];
+        return this.connection.query(
+            `DELETE FROM employee WHERE ? = CONCAT(employee.first_name, ' ', employee.last_name);`, inserts
+        )
+    }
 
     //updateEmployeeRole
+    updateEmployeeRole(newRole, employee) {
+        let inserts = [newRole.id, employee.id];
+        return this.connection.query(
+            `UPDATE employee
+            SET employee.role_id = ?
+            WHERE employee.id = ?`, inserts
+        )
+    }
 
-    //updateEmployeeManager
+    updateEmployeeManager(newManagerOb, employee) {
+        let inserts = [newManagerOb.value, employee.value];
+        return this.connection.query(
+            `UPDATE employee
+             SET manager_id = ?
+             WHERE id = ?;`, inserts
+        )
+    }
 
     // Find all roles
     findAllRoles() {
@@ -36,10 +63,21 @@ class DB {
         )
     }
 
+    createRole(newRole) {
+        let inserts = [newRole.title, newRole.salary, newRole.dept_id];
+        return this.connection.query(
+            `INSERT INTO role (title, salary, department_id)
+            VALUES (?,?,?)`, inserts
+        )
+    }
 
-    //createRole
-
-    //removeRole
+    removeRole(removeRole){
+        let inserts = [removeRole.id];
+        return this.connection.query(
+            `DELETE FROM role
+            WHERE id = ?`, inserts
+        )
+    }
 
     findAllDepartments() {
         return this.connection.query(
@@ -47,23 +85,59 @@ class DB {
         )
     }
 
-    //createDepartment
-
-    //removeDepartment
-
-    findAllEmployeesByDepartment() {
+    createDepartment(newDepartment) {
+        let inserts = [newDepartment.dept_name]
         return this.connection.query(
-            // "SELECT employee.id, employee.first_name, employee.last_name, role.title AS role FROM employee LEFT JOIN department on employee."
-            `SELECT department.dept_name AS Department, role.title AS Title, CONCAT(employee.first_name, employee.last_name) AS Employee 
+            `INSERT INTO department (dept_name)
+            VALUES (?)`, inserts
+        )
+    }
+
+    removeDepartment(removeDepartment){
+        let inserts = [removeDepartment.id];
+        return this.connection.query(
+            `DELETE FROM department
+            WHERE id = ?`, inserts
+        )
+    }
+
+    findAllEmployeesByDepartment(viewDept) {
+        let inserts = [viewDept.view_dept];
+        return this.connection.query(
+            `SELECT department.dept_name AS Department, department.id AS Department_ID, role.title AS Title, CONCAT(employee.first_name,' ', employee.last_name) AS Employee, employee.id AS Employee_ID, role.salary AS Salary
             FROM employee
-            LEFT JOIN role ON employee.role_id = role.id 
-            LEFT JOIN department on role.department_id = department.id
-            ORDER BY Department;`
+            LEFT JOIN role ON employee.role_id = role.id
+            INNER JOIN department on role.department_id = department.id
+            WHERE department.id = ?;`, inserts
 
         )
     }
 
+    findEmployee(employee) {
+        let inserts = [employee.id];
+        return this.connection.query(
+            `SELECT * FROM employee 
+            WHERE employee.id = ?`, inserts
+        )
+    }
+
     //findAllEmployeesByManager
+    findAllEmployeesByManager() {
+        return this.connection.query(
+            `SELECT  CONCAT(manager.first_name, ' ', manager.last_name) AS Manager, CONCAT(employee.first_name, ' ', employee.last_name) AS Employee  FROM employee
+            LEFT JOIN employee manager on manager.id = employee.manager_id
+            ORDER BY manager DESC;`
+        )
+    }
+
+
+
+    setDepartmentManager(department) {
+        let inserts = [department.dept_name];
+        return this.connection.query(
+            
+        )
+    }
 
 }
 
